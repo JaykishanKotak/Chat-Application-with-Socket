@@ -1,5 +1,6 @@
 <template>
     <h1>Chat App</h1>
+    <!--Rooms-->
     <!-- Only Show This if User is Not Joined -->
     <div v-if="!joined" class="parent-container">
         <div class="name-container">
@@ -10,6 +11,9 @@
     <!-- If User is Not Joined -->
     <div v-if="joined">
         <div class="list-container">
+            <div class="container">
+                <b>{{ room.roomId }}</b>
+            </div>
             <div v-for="message in messages" :key="message.id">
                 <b>
                     {{ message.user }}
@@ -21,7 +25,6 @@
             <textarea v-model="text" class="text-message" v-on:keyup.enter="sendMessage"></textarea>
         </div>
     </div>
-
 </template>
 
 <script>
@@ -34,6 +37,7 @@ export default {
             joined: false,
             currentUser: "",
             text: "",
+            room: "",
             messages: [
                 //{
                 // id: 1,
@@ -48,7 +52,11 @@ export default {
             //console.log(this.currentUser);
             this.joined = true;
             this.socketInstance = io("http://localhost:3000");
+
             this.socketInstance.on(
+                "room:connected", (roomId) => {
+                    this.room = this.room.concat(roomId);
+                },
                 "message:received", (data) => {
                     this.messages = this.messages.concat(data);
                 }
@@ -67,6 +75,9 @@ export default {
             };
             this.messages = this.messages.concat(message);
             this.socketInstance.emit('message', message);
+            var socket = io.connect();
+            socket.emit('create', 'room1');
+
 
         }
     },
